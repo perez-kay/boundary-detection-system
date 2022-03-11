@@ -1,6 +1,6 @@
 import cv2, statistics
 import Frame
-import json
+import numpy as np
 
 def read_frames():
     """
@@ -19,7 +19,7 @@ def read_frames():
     frame_num = 0
     frames = list()
     while frame_exists:
-        if frame_num >= 1000 and frame_num <= 1005:
+        if frame_num >= 1000 and frame_num <= 4999:
             # get timestamp of frame
             timestamp = vidcap.get(cv2.CAP_PROP_POS_MSEC)
 
@@ -61,17 +61,17 @@ def calculate_manhattan(img1, img2):
             return -1
         
         result = 0
-        for j in range(len(img1)):
-            h_i = img1[j]
-            h_k = img2[j]
-            result += abs(h_i - h_k)
+        # for j in range(len(img1)):
+        #     h_i = img1[j]
+        #     h_k = img2[j]
+        #     result += abs(h_i - h_k)
+        result = np.sum(np.absolute(img1 - img2))
         return result
 
 
 
 def compute_SD(frames):
     # frames = list of frame objects
-    i = 0
     sd = list()
     for i in range(len(frames) - 1):
         frame_i = frames[i].get_histogram()
@@ -88,7 +88,7 @@ def average(list):
 
 
 def find_boundaries(sd):
-    TB = average(sd) + statistics.pstdev(sd) * 11
+    TB = average(sd) + np.std(sd) * 11
     TS = average(sd) * 2
 
     cuts = list()
@@ -104,7 +104,7 @@ def find_boundaries(sd):
         # if greater than TB, it's a cut
         if sd[i] >= TB:
             # Cs = i, Ce = i+1
-            cuts.append((i, i + 1))
+            cuts.append((i + 1000, i + 1001))
             cut_found = True
         
         # if we didn't find a cut on this iter
@@ -137,7 +137,7 @@ def find_boundaries(sd):
                 # if this sum is bigger than TB
                 if gt_sum >= TB:
                     # we found a gt!
-                    gradual_trans.append((fs_candi, fe_candi))
+                    gradual_trans.append((fs_candi + 1000, fe_candi + 1000))
                 
             # reset all vales
             fs_candi_set = False
@@ -154,14 +154,14 @@ def find_boundaries(sd):
 
 frames = read_frames()
 sd = compute_SD(frames)
-# TB = average(sd) + statistics.pstdev(sd) * 11
+# TB = average(sd) + np.std(sd) * 11
 # TS = average(sd) * 2
 # print("TB:", TB)
 # print("TS:", TS)
-# cuts, gts = find_boundaries(sd)
-# print("cuts:", cuts)
-# print("gts:", gts)
+cuts, gts = find_boundaries(sd)
+print("cuts:", cuts)
+print("gts:", gts)
 
-print(frames[0].get_histogram())
-print(frames[1].get_histogram())
+# print(frames[0].get_histogram())
+# print(frames[1].get_histogram())
 # print(calculate_manhattan(frames[0].get_histogram(), frames[1].get_histogram()))
