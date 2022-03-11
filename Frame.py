@@ -53,15 +53,22 @@ class Frame:
         np.array
             The intensity histogram
         """
+        # if self.frame_num % 100 == 0:
+        #     print("computing frame #", self.frame_num)
 
         width, height, channels = self.img.shape
         intensities = list()
         bins = list(range(0,250,10))
         bins.append(255)
 
-        for i in range(width):
-            for j in range(height):
-                intensities.append(self.get_intensity(self.img[i, j]))
+        # for i in range(width):
+        #     for j in range(height):
+        #         intensities.append(self.get_intensity(self.img[i, j]))
+        reds = self.img[:, :, 0] * 0.299
+        greens = self.img[:, :, 1] * 0.587
+        blues = self.img[:, :, 2] * 0.114
+        r_and_g = np.add(reds, greens)
+        intensities.append(np.add(r_and_g, blues))
 
         hist, bin_edges = np.histogram(intensities, bins=bins)
         return hist
