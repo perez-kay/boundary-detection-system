@@ -105,10 +105,11 @@ def find_boundaries(sd):
         if sd[i] >= TB:
             # Cs = i, Ce = i+1
             cuts.append((i + 1001, i + 1002))
-            cut_found = True
+            #cut_found = True
         
         # if we didn't find a cut on this iter
-        if not cut_found:
+        #if not cut_found:
+        if True:
             # if greater that TS and less than TB, it's possibly a gt
             if sd[i] >= TS and sd[i] < TB:
                 # if we haven't set a start candi
@@ -129,7 +130,7 @@ def find_boundaries(sd):
                     lower_than_ts += 1
 
         # if we've hit the Tos or a cut boundary
-        if lower_than_ts > 2 or i in [Cs for Cs, Ce in cuts]:
+        if lower_than_ts > 2 or (i - 1) in [Cs for Cs, Ce in cuts]:
             if fs_candi_set and fe_candi_set:
                 # get the sum of sds from fs to fe
                 gt_sum = sum([sd[i] for i in range(fs_candi, fe_candi + 1, 1)])
@@ -142,7 +143,7 @@ def find_boundaries(sd):
             # reset all vales
             fs_candi_set = False
             fe_candi_set = False
-            cut_found = False
+            # cut_found = False
             lower_than_ts = 0
         
     return cuts, gradual_trans
@@ -160,7 +161,7 @@ sd = compute_SD(frames)
 # print("TS:", TS)
 cuts, gts = find_boundaries(sd)
 print("cuts:", cuts)
-print("gts:", gts)
+print("gts:", gts) # missing 3275 and 4892
 
 # print(frames[0].get_histogram())
 # print(frames[1].get_histogram())
