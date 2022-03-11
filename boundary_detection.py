@@ -1,4 +1,4 @@
-import cv2, statistics
+import cv2, json
 import Frame
 import numpy as np
 
@@ -37,46 +37,41 @@ def read_frames():
 
     return frames
 
-def calculate_manhattan(img1, img2):
+def calculate_distance(img1, img2):
         """
-        Calculates the Manhattan Distance between the two given lists. The lists
-        must be of the same length.
+        Calculates the frame-to-frame distance between the two given images.
+        The arrays must be of the same length.
 
         Parameters
         ----------
-        img1 : list
+        img1 : np.array
             The histogram for the first image
-        img2 : list
+        img2 : np.array
             The histogram for the second image
 
         Returns
         -------
-        float:
-            The calculated Manhattan Distance
+        int:
+            The calculated frame-to-frame distance
         
         """
 
         if len(img1) != len(img2):
             print("Error, lengths don't match up")
             return -1
-        
-        result = 0
-        # for j in range(len(img1)):
-        #     h_i = img1[j]
-        #     h_k = img2[j]
-        #     result += abs(h_i - h_k)
-        result = np.sum(np.absolute(img1 - img2))
-        return result
+        return np.sum(np.absolute(img1 - img2))
 
 
 
 def compute_SD(frames):
-    # frames = list of frame objects
+    """
+    Computes the 
+    """
     sd = list()
     for i in range(len(frames) - 1):
         frame_i = frames[i].get_histogram()
         frame_k = frames[i + 1].get_histogram()
-        difference = calculate_manhattan(frame_i, frame_k)
+        difference = calculate_distance(frame_i, frame_k)
         sd.append(difference)
     return sd
 
@@ -97,10 +92,8 @@ def find_boundaries(sd):
     lower_than_ts = 0
     fs_candi_set = False
     fe_candi_set = False
-    cut_found = False
 
     for i in range(len(sd)):
-
         # if greater than TB, it's a cut
         if sd[i] >= TB:
             # Cs = i, Ce = i+1
@@ -142,24 +135,32 @@ def find_boundaries(sd):
             fe_candi_set = False
             # cut_found = False
             lower_than_ts = 0
-        
     return cuts, gradual_trans
 
-        
 
+def dump_shots_and_timestamps(frames, gts):
+
+
+    # get the list of fs + 1
+    shot_frames = [fs + 1 for fs, fe in gts]
+    timestamps = dict()
+    for frame in frames:
+        frame_num = frame.get_frame_num()
+        if frame_num in shot_frames:
+            img_path = "frames/" + str(frame_num) + ".jpg"
+            img = cv2.cvtColor(frame.get_img_data(), cv2.COLOR_RGB2BGR)
+            cv2.imwrite(img_path, img)
+            # save the timestamp
+            timestamp = frame.get_timestamp() / 1000
+            timestamps[img_path] = timestamp
+    
+    with open('timestamps.json', 'w') as file:
+        json.dump(timestamps, file)
+    
 
 
 
 frames = read_frames()
 sd = compute_SD(frames)
-# TB = average(sd) + np.std(sd) * 11
-# TS = average(sd) * 2
-# print("TB:", TB)
-# print("TS:", TS)
 cuts, gts = find_boundaries(sd)
-print("cuts:", cuts)
-print("gts:", gts) # missing 3275 and 4892
-
-# print(frames[0].get_histogram())
-# print(frames[1].get_histogram())
-# print(calculate_manhattan(frames[0].get_histogram(), frames[1].get_histogram()))
+dump_shots_and_timestamps(frames, gts)
