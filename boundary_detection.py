@@ -105,29 +105,26 @@ def find_boundaries(sd):
         if sd[i] >= TB:
             # Cs = i, Ce = i+1
             cuts.append((i + 1001, i + 1002))
-            #cut_found = True
         
         # if we didn't find a cut on this iter
-        #if not cut_found:
-        if True:
-            # if greater that TS and less than TB, it's possibly a gt
-            if sd[i] >= TS and sd[i] < TB:
-                # if we haven't set a start candi
-                if not fs_candi_set:
-                    # set it
-                    fs_candi = i
-                    fs_candi_set = True
-                    # print('fs_candi:', fs_candi)
-                else:
-                    # fs is already set and we're trying to find the end
-                    # set fe
-                    fe_candi = i
-                    fe_candi_set = True
-                    # print('fe_candi:', fe_candi)
+        # if greater that TS and less than TB, it's possibly a gt
+        if sd[i] >= TS and sd[i] < TB:
+            # if we haven't set a start candi
+            if not fs_candi_set:
+                # set it
+                fs_candi = i
+                fs_candi_set = True
+                # print('fs_candi:', fs_candi)
             else:
-                # sd[i] < TS so we need to track that
-                if fs_candi_set:
-                    lower_than_ts += 1
+                # fs is already set and we're trying to find the end
+                # set fe
+                fe_candi = i
+                fe_candi_set = True
+                # print('fe_candi:', fe_candi)
+        else:
+            # sd[i] < TS so we need to track that
+            if fs_candi_set:
+                lower_than_ts += 1
 
         # if we've hit the Tos or a cut boundary
         if lower_than_ts > 2 or (i - 1) in [Cs for Cs, Ce in cuts]:
@@ -139,7 +136,7 @@ def find_boundaries(sd):
                 if gt_sum >= TB:
                     # we found a gt!
                     gradual_trans.append((fs_candi + 1001, fe_candi + 1001))
-                
+
             # reset all vales
             fs_candi_set = False
             fe_candi_set = False
