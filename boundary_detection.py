@@ -104,7 +104,7 @@ def find_boundaries(sd):
         # if greater than TB, it's a cut
         if sd[i] >= TB:
             # Cs = i, Ce = i+1
-            cuts.append((i + 1000, i + 1001))
+            cuts.append((i + 1001, i + 1002))
             cut_found = True
         
         # if we didn't find a cut on this iter
@@ -137,7 +137,7 @@ def find_boundaries(sd):
                 # if this sum is bigger than TB
                 if gt_sum >= TB:
                     # we found a gt!
-                    gradual_trans.append((fs_candi + 1000, fe_candi + 1000))
+                    gradual_trans.append((fs_candi + 1001, fe_candi + 1001))
                 
             # reset all vales
             fs_candi_set = False
