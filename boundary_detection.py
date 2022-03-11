@@ -116,13 +116,13 @@ def find_boundaries(sd):
                     # set it
                     fs_candi = i
                     fs_candi_set = True
-                    print('fs_candi:', fs_candi)
+                    # print('fs_candi:', fs_candi)
                 else:
                     # fs is already set and we're trying to find the end
                     # set fe
                     fe_candi = i
                     fe_candi_set = True
-                    print('fe_candi:', fe_candi)
+                    # print('fe_candi:', fe_candi)
             else:
                 # sd[i] < TS so we need to track that
                 if fs_candi_set:
