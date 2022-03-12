@@ -13,7 +13,7 @@ def read_frames():
     list:
         The list of Frame objects from the video
     """
-    # ONLY LOOKING AT FRAMES 1000 - 4999
+
     vidcap = cv2.VideoCapture('soccer.avi')
     frame_exists, frame_img = vidcap.read()
     frame_num = 0
@@ -32,63 +32,74 @@ def read_frames():
         # get the next frame    
         frame_exists, frame_img = vidcap.read()
         frame_num += 1
-    # with open('frames_data.json', 'w') as file:
-    #     json.dump(frames, file, default=lambda x: x.to_dict())
 
     return frames
 
-def calculate_distance(img1, img2):
-        """
-        Calculates the frame-to-frame distance between the two given images.
-        The arrays must be of the same length.
-
-        Parameters
-        ----------
-        img1 : np.array
-            The histogram for the first image
-        img2 : np.array
-            The histogram for the second image
-
-        Returns
-        -------
-        int:
-            The calculated frame-to-frame distance
-        
-        """
-
-        if len(img1) != len(img2):
-            print("Error, lengths don't match up")
-            return -1
-        return np.sum(np.absolute(img1 - img2))
-
-
-
 def compute_SD(frames):
     """
-    Computes the 
+    Computes SD for each frame-to-frame difference.
+
+    Parameters
+    ----------
+    frames : list
+        The list containing all of the Frame objects for the video
+    
+    Returns
+    -------
+    list
+        The SD value for each frame-to-frame difference
     """
+
     sd = list()
     for i in range(len(frames) - 1):
         frame_i = frames[i].get_histogram()
         frame_k = frames[i + 1].get_histogram()
-        difference = calculate_distance(frame_i, frame_k)
+        difference = np.sum(np.absolute(frame_i - frame_k))
         sd.append(difference)
     return sd
 
 def average(list):
     """
     Returns the average value of the given list.
+
+    Parameters
+    ----------
+    list : list
+        The list to take the average of
+    
+    Returns
+    -------
+    float
+        The average of the list
     """
+
     return sum(list) / len(list)
 
 
 def find_boundaries(sd):
+    """
+    Finds all of the cut and gradual transition boundaries within the video.
+
+    Parameters
+    ----------
+    sd : list
+        The list of SD values for each frame-to-frame difference
+    
+    Returns
+    -------
+    cuts : list
+        List of cut boundaries. The list contains tuples which consists of
+        (Cs, Ce)
+    gradual_trans : list
+        List of gradual transition boundaries. The list contains tuples which
+        consist of (Fs, Fe)
+    """
+
     TB = average(sd) + np.std(sd) * 11
     TS = average(sd) * 2
 
     cuts = list()
     gradual_trans = list()
-    fs_candi = -1
     lower_than_ts = 0
     fs_candi_set = False
     fe_candi_set = False
@@ -96,24 +107,23 @@ def find_boundaries(sd):
     for i in range(len(sd)):
         # if greater than TB, it's a cut
         if sd[i] >= TB:
-            # Cs = i, Ce = i+1
+            # Cs = i, Ce = i + 1
+            # we add 1001 to each value to offset the fact that we started our
+            # initial frame count at 0
             cuts.append((i + 1001, i + 1002))
         
-        # if we didn't find a cut on this iter
         # if greater that TS and less than TB, it's possibly a gt
         if sd[i] >= TS and sd[i] < TB:
-            # if we haven't set a start candi
+            # if we haven't set a start candidate
             if not fs_candi_set:
                 # set it
                 fs_candi = i
                 fs_candi_set = True
-                # print('fs_candi:', fs_candi)
             else:
-                # fs is already set and we're trying to find the end
-                # set fe
+                # Fs is already set and we're trying to find the end
+                # set Fe
                 fe_candi = i
                 fe_candi_set = True
-                # print('fe_candi:', fe_candi)
         else:
             # sd[i] < TS so we need to track that
             if fs_candi_set:
@@ -121,8 +131,11 @@ def find_boundaries(sd):
 
         # if we've hit the Tos or a cut boundary
         if lower_than_ts > 2 or (i - 1) in [Cs for Cs, Ce in cuts]:
+            
+            # if we have values for both Fs and Fe
             if fs_candi_set and fe_candi_set:
-                # get the sum of sds from fs to fe
+                
+                # get the sum of SDs from Fs to Fe
                 gt_sum = sum([sd[i] for i in range(fs_candi, fe_candi + 1, 1)])
                 
                 # if this sum is bigger than TB
@@ -130,26 +143,35 @@ def find_boundaries(sd):
                     # we found a gt!
                     gradual_trans.append((fs_candi + 1001, fe_candi + 1001))
 
-            # reset all vales
+            # reset all values
             fs_candi_set = False
             fe_candi_set = False
-            # cut_found = False
             lower_than_ts = 0
+
     return cuts, gradual_trans
 
 
 def dump_shots_and_timestamps(frames, gts):
+    """
+    Saves the first frame of each shot as a JPG file and dumps the
+    file path and timestamp of the first frame of each shot to a JSON file.
 
+    This was used to preprocess the data so it could be displayed with
+    Streamlit.
 
-    # get the list of fs + 1
+    Parameters
+    ----------
+
+    """
+
     shot_frames = [fs + 1 for fs, fe in gts]
     timestamps = dict()
     for frame in frames:
         frame_num = frame.get_frame_num()
         if frame_num in shot_frames:
-            img_path = "frames/" + str(frame_num) + ".jpg"
+            img_path = str(frame_num) + ".jpg"
             img = cv2.cvtColor(frame.get_img_data(), cv2.COLOR_RGB2BGR)
-            cv2.imwrite(img_path, img)
+            cv2.imwrite("frames/" + img_path, img)
             # save the timestamp
             timestamp = frame.get_timestamp() / 1000
             timestamps[img_path] = timestamp
@@ -159,8 +181,21 @@ def dump_shots_and_timestamps(frames, gts):
     
 
 
+if __name__ == "__main__":
+    print("Generating output for video: 20020924_juve_dk_02a.avi...")
+    print()
+    frames = read_frames()
+    sd = compute_SD(frames)
+    cuts, gts = find_boundaries(sd)
+    print("Detected cuts:")
+    print("      Cs         Ce")
+    print("----------------------------")
+    for cut in cuts:
+        print("    ", cut[0], "     ", cut[1])
+    print()
+    print("Detected transitions:")
+    print("      Fs         Fe")
+    print("----------------------------")
+    for trans in gts:
+        print("    ", trans[0], "     ", trans[1])
 
-frames = read_frames()
-sd = compute_SD(frames)
-cuts, gts = find_boundaries(sd)
-dump_shots_and_timestamps(frames, gts)

@@ -1,11 +1,62 @@
 import streamlit as st
-import boundary_detection as bd
+import json, datetime
 
 # ffmpeg -i soccer.avi -vcodec libx264 -acodec aac soccer.mp4
 
 
 
-video = open('soccer.mp4', 'rb')
-bytes = video.read()
+# import shot frames and their timestamps
+with open('timestamps.json', 'r') as f:
+    frames = json.load(f)
 
-st.video(bytes, start_time=int(34.355643))
+# read the video
+video = open('soccer.mp4', 'rb')
+video_bytes = video.read()
+
+frames = sorted(list(frames.items()))
+
+
+# set page title
+st.set_page_config(page_title='Video Shot Boundary Detection System')
+
+# Create page title and introduction
+st.title('Video Shot Boundary Detection System')
+st.write('Welcome to the Video Shot Boundary Detection System! Using the  \
+          drop-down menu below, select \
+          the shot you would like to view and click "View this shot\". The \
+          app will then display the first frame of the selected shot on the \
+          left, along with its frame number. On the right, you can view this \
+          shot in the video by pressing the play button.')
+st.write('NOTE: Due to Streamlit limitations, the video playback of the shot \
+          may not start at the exact right place. This is because Streamlit \
+          only accepts integers (i.e seconds) to adjust the starting position \
+          of the video. Thus, the exact timestamp the shot starts will be \
+          displayed along side the video to verify correctness. The timestamp \
+          is displayed in Hours:Minutes:Seconds format.')
+
+
+shots = ["Shot " + str(i) for i in range(1, 15, 1)]
+option = st.selectbox("Select a shot to view", shots)
+
+option_idx = int(option[-2:]) - 1
+checked = st.button("View this shot")
+
+left_col, right_col= st.columns(2)
+
+with left_col:
+    if checked:
+        st.subheader("First frame of the shot")
+        st.image(image="frames/" + frames[option_idx][0], \
+                caption="Frame " + frames[option_idx][0][:4],)
+
+with right_col:
+    if checked:
+        st.subheader("Video of the shot")
+        video = open('soccer.mp4', 'rb')
+        video_bytes = video.read()
+        st.video(video_bytes, start_time=round(frames[option_idx][1]))
+        st.caption("The shot actually starts at " + \
+                   str(datetime.timedelta(seconds=frames[option_idx][1])))
+
+            
+           
