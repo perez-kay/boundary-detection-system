@@ -1,21 +1,12 @@
 import streamlit as st
 import json, datetime
 
-# ffmpeg -i soccer.avi -vcodec libx264 -acodec aac soccer.mp4
-
-
-
 # import shot frames and their timestamps
 with open('timestamps.json', 'r') as f:
     frames = json.load(f)
 
-# read the video
-video = open('soccer.mp4', 'rb')
-video_bytes = video.read()
-
 # convert dictionary into list of tuples
 frames = sorted(list(frames.items()))
-
 
 # set page title
 st.set_page_config(page_title='Video Shot Boundary Detection System')
@@ -34,7 +25,6 @@ st.write('NOTE: Due to Streamlit limitations, the video playback of the shot \
           of the video. Thus, the exact timestamp the shot starts will be \
           displayed along side the video to verify correctness. The timestamp \
           is displayed in Hours:Minutes:Seconds format.')
-
 
 # Display shots to choose from
 shots = ["Shot " + str(i) for i in range(1, 15, 1)]
@@ -60,9 +50,6 @@ with right_col:
         st.subheader("Video of the shot")
         video = open('soccer.mp4', 'rb')
         video_bytes = video.read()
-        st.video(video_bytes, start_time=round(frames[option_idx][1]))
+        st.video('https://youtu.be/THb4_DKkzlU', start_time=round(frames[option_idx][1]))
         st.caption("The shot actually starts at " + \
-                   str(datetime.timedelta(seconds=frames[option_idx][1])))
-
-            
-           
+                   str(datetime.timedelta(seconds=frames[option_idx][1])))  
