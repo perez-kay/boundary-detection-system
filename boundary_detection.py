@@ -1,6 +1,6 @@
 import cv2, json
-import Frame
 import numpy as np
+import Frame
 
 def read_frames():
     """
@@ -29,7 +29,7 @@ def read_frames():
             # append the frame to the frames data
             frames.append(Frame.Frame(frame_num, timestamp, frame_img))
 
-        # get the next frame    
+        # get the next frame
         frame_exists, frame_img = vidcap.read()
         frame_num += 1
 
@@ -43,7 +43,7 @@ def compute_SD(frames):
     ----------
     frames : list
         The list containing all of the Frame objects for the video
-    
+
     Returns
     -------
     list
@@ -161,6 +161,10 @@ def dump_shots_and_timestamps(frames, gts):
 
     Parameters
     ----------
+    frames : list
+        The list containing all of the Frame objects for the video
+    gts : list
+        The list containing all of the boundaries for gradual transitions
 
     """
 

@@ -13,13 +13,14 @@ with open('timestamps.json', 'r') as f:
 video = open('soccer.mp4', 'rb')
 video_bytes = video.read()
 
+# convert dictionary into list of tuples
 frames = sorted(list(frames.items()))
 
 
 # set page title
 st.set_page_config(page_title='Video Shot Boundary Detection System')
 
-# Create page title and introduction
+# Create introduction
 st.title('Video Shot Boundary Detection System')
 st.write('Welcome to the Video Shot Boundary Detection System! Using the  \
           drop-down menu below, select \
@@ -35,22 +36,27 @@ st.write('NOTE: Due to Streamlit limitations, the video playback of the shot \
           is displayed in Hours:Minutes:Seconds format.')
 
 
+# Display shots to choose from
 shots = ["Shot " + str(i) for i in range(1, 15, 1)]
 option = st.selectbox("Select a shot to view", shots)
 
+# Get the index of the chosen shot to pull out of frames list
 option_idx = int(option[-2:]) - 1
 checked = st.button("View this shot")
 
+# set up columns for displaying results
 left_col, right_col= st.columns(2)
 
 with left_col:
     if checked:
+        # Display the first frame of the shot
         st.subheader("First frame of the shot")
         st.image(image="frames/" + frames[option_idx][0], \
                 caption="Frame " + frames[option_idx][0][:4],)
 
 with right_col:
     if checked:
+        # Display the video
         st.subheader("Video of the shot")
         video = open('soccer.mp4', 'rb')
         video_bytes = video.read()

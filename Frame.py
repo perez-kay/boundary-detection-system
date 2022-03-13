@@ -1,6 +1,34 @@
 import numpy as np
 
 class Frame:
+    """
+    The Frame class stores important information about a frame of a video.
+
+    Attributes
+    ----------
+    frame_num : int
+        The number of this frame in the video
+    timestamp : float
+        The timestamp that this frame appears in the video (in milliseconds)
+    img_data : np.array
+        The image data representing the frame
+    histogram : np.array
+        The intensity histogram data for the frame
+
+    Methods
+    --------
+    get_frame_num()
+        Returns the frame's number
+    get_timestamp()
+        Returns the frame's timestamp
+    get_img_data()
+        Returns the frame's image data
+    get_histogram()
+        Returns the frame's histogram data
+    calculate_histogram()
+        Calculates the histogram for the frame
+
+    """
 
     def __init__(self, frame_num, timestamp, img_data):
         self.frame_num = frame_num
@@ -9,21 +37,52 @@ class Frame:
         self.histogram = self.compute_histogram()
 
     def get_frame_num(self):
+        """
+        Returns the frame's number.
+
+        Returns
+        -------
+        int
+            The frame number
+        """
+
         return self.frame_num
     
     def get_timestamp(self):
+        """
+        Returns the frame's timestamp in milliseconds.
+
+        Returns
+        --------
+        float
+            The timestamp
+        """
+        
         return self.timestamp
 
     def get_img_data(self):
+        """
+        Returns the frame's image data.
+
+        Returns
+        -------
+        np.array
+            The image data for the frame
+        """
+        
         return self.img
 
     def get_histogram(self):
-        return self.histogram
+        """
+        Returns the intensity histogram for the frame
 
-    def to_dict(self):
-        self.img = self.img.tolist()
-        self.histogram = self.histogram.tolist()
-        return self.__dict__  
+        Returns
+        -------
+        np.array
+            The intensity histogram
+        """
+
+        return self.histogram
 
     def compute_histogram(self):
         """
