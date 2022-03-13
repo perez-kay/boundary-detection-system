@@ -202,4 +202,16 @@ if __name__ == "__main__":
     print("----------------------------")
     for trans in gts:
         print("    ", trans[0], "     ", trans[1])
+    print()
+    print("First frame of shots:")
+    print("      Ce        Fs + 1")
+    print("----------------------------")
+    ces = [ce for cs, ce in cuts]
+    ces.append("    ") # offset for there being 1 less cut than gt
+    fs_1 = [fs + 1 for fs, fe in gts]
+    first_frames = zip(ces, fs_1)
+    for first_frame in first_frames:
+        print("    ", first_frame[0], "     ", first_frame[1])
+
+    
 
