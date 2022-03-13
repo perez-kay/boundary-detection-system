@@ -108,7 +108,7 @@ def find_boundaries(sd):
         # if greater than TB, it's a cut
         if sd[i] >= TB:
             # Cs = i, Ce = i + 1
-            # we add 1001 to each value to offset the fact that we started our
+            # add 1001 to each value to offset the fact that we started our
             # initial frame count at 0
             cuts.append((i + 1001, i + 1002))
         
@@ -174,9 +174,12 @@ def dump_shots_and_timestamps(frames, gts):
         frame_num = frame.get_frame_num()
         if frame_num in shot_frames:
             img_path = str(frame_num) + ".jpg"
+            
+            # convert the colorspace back to BGR so it gets saved correctly
             img = cv2.cvtColor(frame.get_img_data(), cv2.COLOR_RGB2BGR)
             cv2.imwrite("frames/" + img_path, img)
-            # save the timestamp
+
+            # timestamp is in milliseconds, so divide by 1000
             timestamp = frame.get_timestamp() / 1000
             timestamps[img_path] = timestamp
     
