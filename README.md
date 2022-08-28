@@ -1,1 +1,1 @@
-# boundary-detection-system
+# Video Shot Boundary Detection System
